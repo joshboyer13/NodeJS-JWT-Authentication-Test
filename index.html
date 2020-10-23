@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js" integrity="sha512-quHCp3WbBNkwLfYUMd+KwBAgpVukJu5MncuQaWXgCrfgcxCJAq/fo+oqrRKOj+UKEmyMCG3tb8RB63W+EmrOBg==" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div class="container-fluid">
+
+        <h1 class ="row">Login</h1>
+
+        <main>
+            <div class = "row">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username">
+            </div>
+
+            <div class = "row">
+                <label for="password">password</label>
+                <input type="text" name="password" id="password">
+            </div>
+
+            <div class="gallery" id="url">
+                <button onclick="login()" data-name="login">Login</button>
+                <button onclick="settings()" data-name="setting">Settings</button>
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+        
+        function login() {
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+            };
+            axios.post('/api/login', data)
+                .then(res => {
+                    console.log(res);
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                    if (res && res.data && res.data.success){
+                        const token = res.data.token;
+                        localStorage.setItem('jwt', token);
+                        getDashboard();
+                    }
+                });
+        }
+
+        function getDashboard(){
+            const token = localStorage.getItem('jwt');
+            axios.get('/api/dashboard',{
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(res => {
+                if (res && res.data && res.data.success){
+                    document.querySelector('h1.row').innerHTML = 'Dashboard';
+                    document.querySelector('main').innerHTML = res.data.myContent;
+                    
+                }
+            
+            });
+        }
+
+        function settings(){
+            const token = localStorage.getItem('jwt');
+            axios.get('/api/settings',{
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(res => {
+                if (res && res.data && res.data.success){
+                    document.querySelector('h1.row').innerHTML = res.data.title;
+                    document.querySelector('main').innerHTML = res.data.myContent;
+                }
+            
+            });
+        }
+
+        var container = document.querySelector('.gallery');
+
+        container.addEventListener('click', function(e) {
+            console.log(e.target.getAttribute('data-name'));
+            history.pushState(null, null, e.target.getAttribute('data-name'));
+        if (e.target != e.currentTarget) {
+         e.preventDefault();
+         
+    
+        }
+        e.stopPropagation();
+        }, false);
+    
+        
+
+        
+
+    </script>
+    
+</body>
+</html>
